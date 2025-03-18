@@ -60,11 +60,15 @@ const fetchEvents = async () => {
     const now = new Date();
     const today = now.toISOString().split("T")[0]; // Date d'aujourd'hui en format YYYY-MM-DD
 
-    return (jsonResponse.result || [])
+    let events = (jsonResponse.result || [])
       .filter(event => event.partner_id)
       .filter(event => {
         const eventDate = new Date(event.start).toISOString().split("T")[0];
         return eventDate === today;
+      })
+      .filter(event => {
+        const stopTime = new Date(new Date(event.stop).getTime() + 3600000);
+        return stopTime > now; // Exclure les événements déjà terminés
       })
       .map(event => {
         // Ajouter 1h pour la gestion serveur
@@ -92,16 +96,23 @@ const fetchEvents = async () => {
         const remainingTime = remainingSeconds > 0 ? `${hours}h ${minutes}min ${seconds}s` : "";
         const totalDuration = `${totalHours}h ${totalMinutes}min ${totalSec}s`;
 
-        console.log(`✅ Événement: ${event.name} - Début serveur: ${startTime} - Fin serveur: ${stopTime} - Début affiché: ${displayStartTime} - Fin affiché: ${displayStopTime} - Temps restant: ${remainingTime}`);
-
         return {
           ...event,
           start: formatTime(displayStartTime), // Afficher avec une heure en plus
           stop: formatTime(displayStopTime),   // Afficher avec une heure en plus
           remainingTime,
           duration: totalDuration, // Durée totale de l'événement
+          timestamp: startTime.getTime(), // Ajouter un timestamp pour le tri
         };
       });
+
+    // Trier les événements par ordre chronologique
+    events.sort((a, b) => a.timestamp - b.timestamp);
+
+    // Sélectionner le premier événement en cours ou le plus proche et celui qui suit
+    const upcomingEvents = events.slice(0, 2);
+    
+    return upcomingEvents;
   } catch (error) {
     console.error("❌ Erreur lors de la requête :", error);
     return [];

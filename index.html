@@ -21,56 +21,58 @@
         document.getElementById("fetch-events").addEventListener("click", async () => {
             const eventList = document.getElementById("event-list");
             eventList.innerHTML = "<p>Chargement...</p>";
-    
+
             try {
                 const response = await fetch("http://localhost:3000/api/events");
                 const events = await response.json();
                 eventList.innerHTML = "";
-    
+
                 events.forEach(event => {
                     const eventDiv = document.createElement("div");
                     eventDiv.classList.add("event-item");
-    
+
                     eventDiv.innerHTML = `
                         <h3>${event.name}</h3>
                         <p><strong>Début :</strong> ${event.start}</p>
                         <p><strong>Fin :</strong> ${event.stop}</p>
                         <p><strong>Durée :</strong> ${event.duration}</p>
                         <p><strong>Partenaire :</strong> ${event.partner_id ? event.partner_id[1] : "N/A"}</p>
+                        <p><strong>Salle :</strong> ${event.resource ? event.resource : "Non spécifiée"}</p>
                         <p><strong>Temps restant :</strong> <span class="soon">${event.remainingTime}</span></p>
                     `;
-    
+
                     eventList.appendChild(eventDiv);
                 });
-    
+
             } catch (error) {
                 eventList.innerHTML = "<p>Erreur lors de la récupération des événements.</p>";
             }
         });
-    
+
         // Met à jour les secondes chaque seconde
         setInterval(async () => {
             const eventList = document.getElementById("event-list");
             if (!eventList.children.length) return; // Ne rien faire si la liste est vide
-    
+
             try {
                 const response = await fetch("http://localhost:3000/api/events");
                 const events = await response.json();
-    
+
                 eventList.innerHTML = "";
                 events.forEach(event => {
                     const eventDiv = document.createElement("div");
                     eventDiv.classList.add("event-item");
-    
+
                     eventDiv.innerHTML = `
                         <h3>${event.name}</h3>
                         <p><strong>Début :</strong> ${event.start}</p>
                         <p><strong>Fin :</strong> ${event.stop}</p>
                         <p><strong>Durée :</strong> ${event.duration}</p>
                         <p><strong>Partenaire :</strong> ${event.partner_id ? event.partner_id[1] : "N/A"}</p>
+                        <p><strong>Salle :</strong> ${event.resource ? event.resource : "Non spécifiée"}</p>
                         <p><strong>Temps restant :</strong> <span class="soon">${event.remainingTime}</span></p>
                     `;
-    
+
                     eventList.appendChild(eventDiv);
                 });
             } catch (error) {
