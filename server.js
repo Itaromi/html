@@ -97,7 +97,7 @@ const fetchEvents = async () => {
         const totalDuration = `${totalHours}h ${totalMinutes}min ${totalSec}s`;
 
         return {
-          ...event,
+          name: event.name,
           start: formatTime(displayStartTime), // Afficher avec une heure en plus
           stop: formatTime(displayStopTime),   // Afficher avec une heure en plus
           remainingTime,
@@ -106,10 +106,8 @@ const fetchEvents = async () => {
         };
       });
 
-    // Trier les événements par ordre chronologique
     events.sort((a, b) => a.timestamp - b.timestamp);
 
-    // Sélectionner le premier événement en cours ou le plus proche et celui qui suit
     const upcomingEvents = events.slice(0, 2);
     
     return upcomingEvents;
