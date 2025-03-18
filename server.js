@@ -9,16 +9,13 @@ app.use(cors());
 app.use(express.json());
 
 // Fonction pour formater l'heure en HH:MM:SS
-const formatTime = (dateString) => {
-  const date = new Date(dateString);
+const formatTime = (date) => {
   return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 };
 
 // Fonction pour calculer la durée totale de l'événement en HH:MM:SS
 const calculateDuration = (start, stop) => {
-  const startTime = new Date(start);
-  const stopTime = new Date(stop);
-  const durationSeconds = Math.max(0, Math.round((stopTime - startTime) / 1000));
+  const durationSeconds = Math.max(0, Math.round((stop - start) / 1000));
   const hours = Math.floor(durationSeconds / 3600);
   const minutes = Math.floor((durationSeconds % 3600) / 60);
   const seconds = durationSeconds % 60;
@@ -70,8 +67,13 @@ const fetchEvents = async () => {
         return eventDate === today;
       })
       .map(event => {
-        const startTime = new Date(event.start);
-        const stopTime = new Date(event.stop);
+        // Ajouter 1h pour la gestion serveur
+        const startTime = new Date(new Date(event.start).getTime() + 3600000);
+        const stopTime = new Date(new Date(event.stop).getTime() + 3600000);
+
+        // Affichage frontend avec une heure en plus
+        const displayStartTime = new Date(startTime.getTime() + 3600000);
+        const displayStopTime = new Date(stopTime.getTime() + 3600000);
 
         let remainingSeconds = 0;
         if (now >= startTime && now < stopTime) {
@@ -90,12 +92,12 @@ const fetchEvents = async () => {
         const remainingTime = remainingSeconds > 0 ? `${hours}h ${minutes}min ${seconds}s` : "";
         const totalDuration = `${totalHours}h ${totalMinutes}min ${totalSec}s`;
 
-        console.log(`✅ Événement: ${event.name} - Début: ${startTime} - Fin: ${stopTime} - Temps restant: ${remainingTime}`);
+        console.log(`✅ Événement: ${event.name} - Début serveur: ${startTime} - Fin serveur: ${stopTime} - Début affiché: ${displayStartTime} - Fin affiché: ${displayStopTime} - Temps restant: ${remainingTime}`);
 
         return {
           ...event,
-          start: formatTime(startTime), // Formater l'heure de début
-          stop: formatTime(stopTime),   // Formater l'heure de fin
+          start: formatTime(displayStartTime), // Afficher avec une heure en plus
+          stop: formatTime(displayStopTime),   // Afficher avec une heure en plus
           remainingTime,
           duration: totalDuration, // Durée totale de l'événement
         };
